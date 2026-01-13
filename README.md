@@ -8,6 +8,7 @@ In this project, we are using a RISC-V based CH32V203 MCU to scan the I2C bus. W
 
 - [x] Basic one-time scan
 - [x] Continuous scan
+- [ ] refactor and build leds lib
 - [ ] PC-side software support
 - [ ] linux usb to i2c adapter driver
 - [ ] linux MFD (Multi-Function Device) driver (GPIO/I2C/SPI/UART)
