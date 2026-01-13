@@ -1,9 +1,13 @@
 [package]
 name = "i2c-tools"
-version = "0.1.0"
-authors = ["iotah <writeforever@foxmail.com>"]
-edition = "2021"
+version = "0.2.0"
+authors = ["Wooden Chair <hua.zheng@embeddedboys.com>"]
+edition = "2024"
 license = "MIT OR Apache-2.0"
+
+[[bin]]
+name = "i2c-tools"
+harness = false # do not use the built in cargo test harness -> resolve rust-analyzer errors
 
 [dependencies]
 ch32-hal = { git = "https://github.com/ch32-rs/ch32-hal.git", features = [
@@ -11,19 +15,21 @@ ch32-hal = { git = "https://github.com/ch32-rs/ch32-hal.git", features = [
     "embassy",
     "time-driver-tim2",
     "rt",
+    "memory-x",
 ] }
-embassy-executor = { version = "0.6.0", features = [
-    "nightly",
-    "integrated-timers",
-    "arch-riscv32",
-    "executor-thread",
+embassy-executor = { version = "0.9.1", features = [
+    "arch-spin",
+    "executor-thread"
 ] }
-embassy-time = { version = "0.3.2" }
-qingke-rt = "0.2.1"
-qingke = "0.2.0"
+embassy-time = { version = "0.5.0" }
+qingke-rt = "0.6.1"
+qingke = "0.6.1"
 embedded-hal = "1.0.0"
-panic-halt = "0.2.0"
-ssd1306 = "0.9.0"
+panic-halt = "1.0.0"
+ssd1306 = "0.10.0"
+
+[profile.dev]
+opt-level = 's'
 
 [profile.release]
 strip = false     # symbols are not flashed to the microcontroller, so don't strip them.

@@ -12,30 +12,28 @@ In this project, we are using a RISC-V-based CH32V203 MCU to scan the I2C bus. W
 
 ### Build
 
+install dependencies
+
+```bash
+rustup target add riscv32imac-unknown-none-elf
+
+cargo install --locked wlink
+```
+
 ```bash
 cargo build --release
 ```
 
-### Flash
+### Flash firmware
 
-[wlink](https://github.com/ch32-rs/wlink) needs to be installed:
-
-```bash
-cargo install --git https://github.com/ch32-rs/wlink
-```
-
-If you are using a WSL instance, you need to transport the usb device to the WSL instance via [usbipd]():
-```shell
-usbipd list
-
-# 9-4    1a86:8010  WCH-Link, USB 串行设备 (COM28)                                Shared
-
-usbipd bind -b 9-4
-usbipd attach --wsl -b 9-4
-```
-
-With a WCH-Link probe connected to your target and then:
+With a WCH-Link/E probe connected to your target and then:
 
 ```bash
-cargo run --release
+cargo run -r
+```
+
+### Run examples
+
+```bash
+cargo run -r --example i2c-ssd1306
 ```

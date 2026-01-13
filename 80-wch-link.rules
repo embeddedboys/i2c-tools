@@ -1,0 +1,2 @@
+# WCH-LinkRV
+SUBSYSTEM=="usb", ATTR{idVendor}=="1a86", ATTR{idProduct}=="8010", MODE="0666"
