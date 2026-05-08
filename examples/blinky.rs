@@ -31,18 +31,18 @@ async fn blink(p: ch32_hal::Peripherals) {
     ];
 
     let mut rows = [
-        Output::new(p.PA3, Level::Low, Speed::Low),
-        Output::new(p.PA4, Level::Low, Speed::Low),
-        Output::new(p.PA5, Level::Low, Speed::Low),
-        Output::new(p.PA6, Level::Low, Speed::Low),
-        Output::new(p.PA7, Level::Low, Speed::Low),
-        Output::new(p.PB0, Level::Low, Speed::Low),
-        Output::new(p.PB1, Level::Low, Speed::Low),
         Output::new(p.PB10, Level::Low, Speed::Low),
+        Output::new(p.PB1, Level::Low, Speed::Low),
+        Output::new(p.PB0, Level::Low, Speed::Low),
+        Output::new(p.PA7, Level::Low, Speed::Low),
+        Output::new(p.PA6, Level::Low, Speed::Low),
+        Output::new(p.PA5, Level::Low, Speed::Low),
+        Output::new(p.PA4, Level::Low, Speed::Low),
+        Output::new(p.PA3, Level::Low, Speed::Low),
     ];
 
     loop {
-        for led in (0x0..0x7f).rev() {
+        for led in 0x0..0x7f {
             let row = (led / 16) as usize;
             let col = (led % 16) as usize;
 
