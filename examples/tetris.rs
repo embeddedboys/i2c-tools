@@ -181,14 +181,36 @@ async fn main(_spawner: Spawner) -> ! {
 
     // Auto-play: compute best move, then animate the drop
     let (mut target_col, mut target_rot) = best_move(&board, piece_idx);
-    let mut cur_col = target_col;
+    let mut cur_col = COLS as i8 / 2 - 2;
+    let mut cur_rot = 0usize;
     let mut cur_row = 0i8;
 
     loop {
-        let shape = PIECES[piece_idx][target_rot];
+        // Move toward target: rotate, then shift, then drop
+        if frame % 3 == 0 {
+            // Rotate toward target
+            if cur_rot != target_rot {
+                let next_rot = (cur_rot + 1) % 4;
+                if board.fits(PIECES[piece_idx][next_rot], cur_col, cur_row) {
+                    cur_rot = next_rot;
+                }
+            }
+
+            // Move toward target column
+            if cur_col < target_col {
+                if board.fits(PIECES[piece_idx][cur_rot], cur_col + 1, cur_row) {
+                    cur_col += 1;
+                }
+            } else if cur_col > target_col {
+                if board.fits(PIECES[piece_idx][cur_rot], cur_col - 1, cur_row) {
+                    cur_col -= 1;
+                }
+            }
+        }
 
         // Drop one step every 6 frames
         if frame % 6 == 0 {
+            let shape = PIECES[piece_idx][cur_rot];
             if board.fits(shape, cur_col, cur_row + 1) {
                 cur_row += 1;
             } else {
@@ -201,11 +223,12 @@ async fn main(_spawner: Spawner) -> ! {
                 let (tc, tr) = best_move(&board, piece_idx);
                 target_col = tc;
                 target_rot = tr;
-                cur_col = target_col;
+                cur_col = COLS as i8 / 2 - 2;
+                cur_rot = 0;
                 cur_row = 0i8;
 
                 // Check game over
-                if !board.fits(PIECES[piece_idx][target_rot], cur_col, cur_row) {
+                if !board.fits(PIECES[piece_idx][cur_rot], cur_col, cur_row) {
                     // Reset
                     board = Board::new();
                 }
@@ -214,7 +237,7 @@ async fn main(_spawner: Spawner) -> ! {
 
         // Render: board + falling piece (flip vertically for display)
         let mut fb: Fb = [[false; COLS]; ROWS];
-        let shape = PIECES[piece_idx][target_rot];
+        let shape = PIECES[piece_idx][cur_rot];
         for r in 0..ROWS {
             for c in 0..COLS {
                 if board.cells[r][c] {
