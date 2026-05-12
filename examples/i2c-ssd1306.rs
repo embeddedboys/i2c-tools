@@ -1,23 +1,17 @@
 #![no_std]
 #![no_main]
-#![feature(type_alias_impl_trait)]
-#![feature(impl_trait_in_assoc_type)]
 
 use core::fmt::Write;
-use core::num::Saturating;
 
-use ch32_hal::Peri;
-use ch32_hal::gpio::{AnyPin, Level, Output, Speed};
 use ch32_hal::i2c::{Config, I2c};
-use ch32_hal::println;
 use ch32_hal::time::Hertz;
 use embassy_executor::Spawner;
 use embassy_time::Timer;
 use panic_halt as _;
 use ssd1306::{I2CDisplayInterface, Ssd1306, prelude::*};
 
-#[embassy_executor::main(entry = "qingke_rt::entry")]
-async fn main(spawner: Spawner) -> ! {
+#[embassy_executor::main(entry = "ch32_hal::entry")]
+async fn main(_spawner: Spawner) -> ! {
     ch32_hal::debug::SDIPrint::enable();
     let mut config = ch32_hal::Config::default();
     config.rcc = ch32_hal::rcc::Config::SYSCLK_FREQ_144MHZ_HSE;
@@ -37,6 +31,7 @@ async fn main(spawner: Spawner) -> ! {
     loop {
         for ch in 'a'..'z' {
             let _ = display.write_char(ch);
+            Timer::after_millis(1).await;
         }
     }
 }
