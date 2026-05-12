@@ -81,18 +81,18 @@ async fn main(_spawner: Spawner) -> ! {
         let col = (x >> 8) as usize;
         let row = (y >> 8) as usize;
 
-        // Scan the matrix — only one LED is on per frame
-        for r in 0..ROWS {
-            if r == row {
-                columns[col].set_high();
+        // Scan matrix repeatedly to keep image stable
+        for _ in 0..20 {
+            for r in 0..ROWS {
+                if r == row {
+                    columns[col].set_high();
+                }
+                rows[r].set_high();
+                Timer::after_micros(500).await;
+                rows[r].set_low();
+                columns[col].set_low();
             }
-            rows[r].set_high();
-            Timer::after_micros(1000).await;
-            rows[r].set_low();
-            columns[col].set_low();
         }
-
-        // Control speed
-        Timer::after_millis(100).await;
+        // ~80ms per position (20 scans × 4ms) => smooth motion, no flicker
     }
 }
