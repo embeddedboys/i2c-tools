@@ -21,7 +21,7 @@ async fn main(_spawner: Spawner) -> ! {
 
             let mut fb = [[false; COLS]; ROWS];
             fb[row][col] = true;
-            led.scan_once(&fb).await;
+            led.scan(&fb, 10).await;
 
             Timer::after_millis(20).await;
         }
