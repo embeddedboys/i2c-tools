@@ -153,18 +153,20 @@ async fn scroll_text(
         }
     }
 
-    // Scan matrix
-    for row in 0..ROWS {
-        for col in 0..COLS {
-            if fb[row][col] {
-                columns[col].set_high();
+    // Scan matrix repeatedly to keep image stable, then advance scroll
+    for _ in 0..10 {
+        for row in 0..ROWS {
+            for col in 0..COLS {
+                if fb[row][col] {
+                    columns[col].set_high();
+                }
             }
-        }
-        rows[row].set_high();
-        Timer::after_micros(500).await;
-        rows[row].set_low();
-        for col in columns.iter_mut() {
-            col.set_low();
+            rows[row].set_high();
+            Timer::after_micros(500).await;
+            rows[row].set_low();
+            for col in columns.iter_mut() {
+                col.set_low();
+            }
         }
     }
 
@@ -226,6 +228,5 @@ Me too. But i doubt it. \
 
     loop {
         scroll_text(&mut columns, &mut rows, text, &mut offset).await;
-        Timer::after_millis(60).await;
     }
 }
