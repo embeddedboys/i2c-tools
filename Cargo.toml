@@ -5,6 +5,10 @@ authors = ["Wooden Chair <hua.zheng@embeddedboys.com>"]
 edition = "2024"
 license = "MIT OR Apache-2.0"
 
+[lib]
+name = "i2c_tools"
+harness = false
+
 [[bin]]
 name = "i2c-tools"
 harness = false # do not use the built in cargo test harness -> resolve rust-analyzer errors
