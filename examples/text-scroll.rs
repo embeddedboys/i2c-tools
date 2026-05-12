@@ -30,7 +30,7 @@ fn build_text_fb(fb: &mut Fb, text: &[u8], offset: i32) {
         let glyph = font::glyph(ch);
         let col_bits = glyph[glyph_col];
         for row in 0..ROWS {
-            if col_bits & (1 << (ROWS - 1 - row)) != 0 {
+            if col_bits & (1 << row) != 0 {
                 fb[row][scr_col] = true;
             }
         }

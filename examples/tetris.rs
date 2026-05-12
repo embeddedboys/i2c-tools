@@ -245,7 +245,7 @@ async fn main(_spawner: Spawner) -> ! {
         for r in 0..ROWS {
             for c in 0..COLS {
                 if board.cells[r][c] {
-                    fb[ROWS - 1 - r][c] = true;
+                    fb[r][c] = true;
                 }
             }
         }
@@ -255,7 +255,7 @@ async fn main(_spawner: Spawner) -> ! {
                     let br = cur_row + r as i8;
                     let bc = cur_col + c as i8;
                     if br >= 0 && br < ROWS as i8 && bc >= 0 && bc < COLS as i8 {
-                        fb[ROWS - 1 - br as usize][bc as usize] = true;
+                        fb[br as usize][bc as usize] = true;
                     }
                 }
             }
