@@ -59,8 +59,7 @@ impl Snake {
     /// Check if moving in (dx, dy) would hit the snake body
     fn would_hit(&self, dx: i8, dy: i8) -> bool {
         let next = self.head().step(dx, dy);
-        // Don't check tail — it will move away (unless we just ate)
-        for i in 0..self.len - 1 {
+        for i in 0..self.len {
             if self.body[i] == next {
                 return true;
             }
@@ -104,40 +103,102 @@ fn spawn_food(rng: &mut Rng, snake: &Snake) -> Pos {
     }
 }
 
-/// Choose direction towards food, avoiding self-collision.
-/// Returns (dx, dy) or None if boxed in.
+/// Count reachable empty cells from `start` using flood fill.
+fn flood_count(start: Pos, snake: &Snake) -> usize {
+    let mut visited = [[false; COLS]; ROWS];
+    // Mark snake body as occupied (except tail, which will move)
+    for i in 0..snake.len - 1 {
+        visited[snake.body[i].y as usize][snake.body[i].x as usize] = true;
+    }
+    let mut count = 0usize;
+    let mut stack = [Pos { x: 0, y: 0 }; 128];
+    let mut sp = 0;
+    stack[sp] = start;
+    sp += 1;
+    visited[start.y as usize][start.x as usize] = true;
+
+    while sp > 0 {
+        sp -= 1;
+        let p = stack[sp];
+        count += 1;
+        let dirs: [(i8, i8); 4] = [(1, 0), (-1, 0), (0, 1), (0, -1)];
+        for &(dx, dy) in &dirs {
+            let n = p.step(dx, dy);
+            if !visited[n.y as usize][n.x as usize] {
+                visited[n.y as usize][n.x as usize] = true;
+                stack[sp] = n;
+                sp += 1;
+            }
+        }
+    }
+    count
+}
+
+/// Choose direction: chase food if safe, otherwise chase tail to survive.
 fn choose_dir(snake: &Snake, food: Pos) -> Option<(i8, i8)> {
     let head = snake.head();
-
-    // All 4 possible directions
+    let tail = snake.body[snake.len - 1];
+    let reverse = (-snake.dx, -snake.dy);
     let dirs: [(i8, i8); 4] = [(1, 0), (-1, 0), (0, 1), (0, -1)];
 
-    // Don't reverse
-    let reverse = (-snake.dx, -snake.dy);
-
-    let mut best_dir: Option<(i8, i8)> = None;
-    let mut best_dist: i16 = i16::MAX;
+    // Collect safe moves
+    #[derive(Copy, Clone)]
+    struct Move {
+        dx: i8,
+        dy: i8,
+        next: Pos,
+        space: usize,
+    }
+    let mut moves = [Move { dx: 0, dy: 0, next: Pos { x: 0, y: 0 }, space: 0 }; 3];
+    let mut n_moves = 0;
 
     for &(dx, dy) in &dirs {
-        // Skip reverse direction
         if (dx, dy) == reverse {
             continue;
         }
-        // Skip self-collision
         if snake.would_hit(dx, dy) {
             continue;
         }
-        // Manhattan distance to food after this move
         let next = head.step(dx, dy);
-        let dist = (next.x - food.x).unsigned_abs() as i16
-            + (next.y - food.y).unsigned_abs() as i16;
-        if dist < best_dist {
-            best_dist = dist;
-            best_dir = Some((dx, dy));
-        }
+        let space = flood_count(next, snake);
+        moves[n_moves] = Move { dx, dy, next, space };
+        n_moves += 1;
     }
 
-    best_dir
+    if n_moves == 0 {
+        return None;
+    }
+
+    // Priority 1: move toward food AND have enough space to survive
+    let mut best: Option<(i8, i8)> = None;
+    let mut best_dist: i16 = i16::MAX;
+    for i in 0..n_moves {
+        let m = &moves[i];
+        if m.space >= snake.len {
+            let dist = (m.next.x - food.x).unsigned_abs() as i16
+                + (m.next.y - food.y).unsigned_abs() as i16;
+            if dist < best_dist {
+                best_dist = dist;
+                best = Some((m.dx, m.dy));
+            }
+        }
+    }
+    if best.is_some() {
+        return best;
+    }
+
+    // Priority 2: move toward tail (maximize space) to survive
+    best_dist = i16::MAX;
+    for i in 0..n_moves {
+        let m = &moves[i];
+        let dist = (m.next.x - tail.x).unsigned_abs() as i16
+            + (m.next.y - tail.y).unsigned_abs() as i16;
+        if dist < best_dist {
+            best_dist = dist;
+            best = Some((m.dx, m.dy));
+        }
+    }
+    best
 }
 
 #[embassy_executor::main(entry = "ch32_hal::entry")]
