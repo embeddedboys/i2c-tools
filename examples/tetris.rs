@@ -186,30 +186,34 @@ async fn main(_spawner: Spawner) -> ! {
     let mut cur_row = 0i8;
 
     loop {
-        // Move toward target: rotate, then shift, then drop
-        if frame % 3 == 0 {
-            // Rotate toward target
-            if cur_rot != target_rot {
-                let next_rot = (cur_rot + 1) % 4;
-                if board.fits(PIECES[piece_idx][next_rot], cur_col, cur_row) {
-                    cur_rot = next_rot;
-                }
-            }
+        // Move toward target: rotate and shift (no drop until in position)
+        if frame % 2 == 0 {
+            let at_target = cur_col == target_col && cur_rot == target_rot;
 
-            // Move toward target column
-            if cur_col < target_col {
-                if board.fits(PIECES[piece_idx][cur_rot], cur_col + 1, cur_row) {
-                    cur_col += 1;
+            if !at_target {
+                // Rotate toward target
+                if cur_rot != target_rot {
+                    let next_rot = (cur_rot + 1) % 4;
+                    if board.fits(PIECES[piece_idx][next_rot], cur_col, cur_row) {
+                        cur_rot = next_rot;
+                    }
                 }
-            } else if cur_col > target_col {
-                if board.fits(PIECES[piece_idx][cur_rot], cur_col - 1, cur_row) {
-                    cur_col -= 1;
+
+                // Move toward target column
+                if cur_col < target_col {
+                    if board.fits(PIECES[piece_idx][cur_rot], cur_col + 1, cur_row) {
+                        cur_col += 1;
+                    }
+                } else if cur_col > target_col {
+                    if board.fits(PIECES[piece_idx][cur_rot], cur_col - 1, cur_row) {
+                        cur_col -= 1;
+                    }
                 }
             }
         }
 
-        // Drop one step every 6 frames
-        if frame % 6 == 0 {
+        // Drop only when at target position
+        if frame % 6 == 0 && cur_col == target_col && cur_rot == target_rot {
             let shape = PIECES[piece_idx][cur_rot];
             if board.fits(shape, cur_col, cur_row + 1) {
                 cur_row += 1;
