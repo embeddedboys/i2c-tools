@@ -212,8 +212,8 @@ async fn main(_spawner: Spawner) -> ! {
             }
         }
 
-        // Drop only when at target position
-        if frame % 6 == 0 && cur_col == target_col && cur_rot == target_rot {
+        // Drop every 6 frames (always, not just at target)
+        if frame % 6 == 0 {
             let shape = PIECES[piece_idx][cur_rot];
             if board.fits(shape, cur_col, cur_row + 1) {
                 cur_row += 1;
